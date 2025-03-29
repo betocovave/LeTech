@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot - Water Flow Monitoring</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Water Conservation Chatbot</h1>
+      <nav>
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="chatbot.html" class="active">Chatbot</a></li>
+          <li><a href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+      </nav>
+    </header>
+    
+    <main>
+      <div class="chatbot-container">
+        <div class="chat-history" id="chatHistory">
+          <div class="message bot-message">
+            <p>Hello! I'm your water conservation assistant. Ask me any questions about saving water.</p>
+          </div>
+        </div>
+        
+        <div class="chat-input">
+          <form id="chatForm">
+            <input type="text" id="userMessage" placeholder="Type your question here..." required>
+            <button type="submit" class="btn primary-btn">Send</button>
+          </form>
+        </div>
+      </div>
+    </main>
+    
+    <footer>
+      <p>&copy; 2025 Water Flow Monitoring System</p>
+    </footer>
+  </div>
+  
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+    
+    // Logout function
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      window.location.href = 'login.html';
+    });
+    
+    // Handle chat form submission
+    document.getElementById('chatForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const userMessage = document.getElementById('userMessage').value;
+      if (!userMessage.trim()) return;
+      
+      // Add user message to chat
+      addMessageToChat(userMessage, 'user');
+      
+      // Clear input
+      document.getElementById('userMessage').value = '';
+      
+      try {
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'message bot-message typing';
+        typingIndicator.innerHTML = '<p>Typing...</p>';
+        document.getElementById('chatHistory').appendChild(typingIndicator);
+        
+        // Send request to backend
+        const response = await fetch('/chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: userMessage })
+        });
+        
+        const data = await response.json();
+        
+        // Remove typing indicator
+        document.getElementById('chatHistory').removeChild(typingIndicator);
+        
+        // Add bot response to chat
+        addMessageToChat(data.response, 'bot');
+      } catch (error) {
+        console.error('Error sending message:', error);
+        // Remove typing indicator if error
+        const typingIndicator = document.querySelector('.typing');
+        if (typingIndicator) {
+          document.getElementById('chatHistory').removeChild(typingIndicator);
+        }
+        
+        // Add error message
+        addMessageToChat('Sorry, I encountered an error. Please try again.', 'bot');
+      }
+    });
+    
+    // Function to add message to chat
+    function addMessageToChat(message, sender) {
+      const messageElement = document.createElement('div');
+      messageElement.className = `message ${sender}-message`;
+      messageElement.innerHTML = `<p>${message}</p>`;
+      
+      document.getElementById('chatHistory').appendChild(messageElement);
+      
+      // Scroll to bottom
+      document.getElementById('chatHistory').scrollTop = document.getElementById('chatHistory').scrollHeight;
+    }
+  </script>
+</body>
+</html>

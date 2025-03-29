@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Water Flow Monitoring</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Water Flow Monitoring System</h1>
+    </header>
+    
+    <main>
+      <div class="auth-form">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          
+          <div class="form-group">
+            <button type="submit" class="btn primary-btn">Login</button>
+          </div>
+          
+          <div id="errorMessage" class="error-message"></div>
+        </form>
+        
+        <p class="auth-link">Don't have an account? <a href="register.html">Register here</a></p>
+      </div>
+    </main>
+    
+    <footer>
+      <p>&copy; 2025 Water Flow Monitoring System</p>
+    </footer>
+  </div>
+  
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch('http://localhost:3000/auth/login', { // Cambiar a URL absoluta
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Guardar el token en localStorage y redirigir al dashboard
+          localStorage.setItem('token', data.token);
+          window.location.href = '/dashboard';
+        } else {
+          document.getElementById('errorMessage').textContent = data.message;
+        }
+      } catch (error) {
+        document.getElementById('errorMessage').textContent = 'An error occurred. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>
